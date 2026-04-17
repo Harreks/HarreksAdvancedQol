@@ -1,0 +1,23 @@
+{
+    "Lua.diagnostics.globals": [
+        "Settings",
+        "CreateSettingsListSectionHeaderInitializer",
+        "CreateSettingsCheckboxDropdownInitializer",
+        "MinimalSliderWithSteppersMixin",
+        "TotemFrame",
+        "TargetFrameToT",
+        "SlashCmdList",
+        "EssencePlayerFrame",
+        "TargetFrameSpellBar",
+        "TargetFrame",
+        "StopwatchFrame",
+        "ActionStatus",
+        "PlayerCastingBarFrame",
+        "PlayerFrame",
+        "Stopwatch_Clear",
+        "Stopwatch_Play",
+        "Stopwatch_Pause",
+        "UiMapPoint",
+        "HarreksAdvancedUiSuite"
+    ]
+}

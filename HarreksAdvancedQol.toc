@@ -1,0 +1,18 @@
+## Interface: 110002
+## Title: Harreks Advanced Quality of Life
+## Notes: Quality of life improvements for the WoW UI.
+## Author: Harrek
+## Version: 1.0.0
+## SavedVariables: HAQDB
+## IconTexture: Interface/Addons/HarreksAdvancedQol/harrek-logo.png
+## OptionalDeps: HarreksAdvancedUiSuite
+## Group: HarreksAdvancedUiSuite
+## LoadSavedVariablesFirst: 1
+
+Libraries\LibAdvancedMenuBuilder\LibAdvancedMenuBuilder.lua
+
+init.lua
+data.lua
+utility.lua
+core.lua
+main.lua
