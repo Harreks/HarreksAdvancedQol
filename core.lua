@@ -42,14 +42,14 @@ end
 function Core.ShowCoordinates(value)
     if value then
         if not Core.CoordinatesBlock then
-            Core.CoordinatesBlock = CreateFrame("Frame")
+            Core.CoordinatesBlock = CreateFrame("Frame", nil, UIParent)
             Core.CoordinatesBlock:SetSize(1, 1)
             Core.CoordinatesBlock:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -5, 5)
             Core.CoordinatesBlock.text = Core.CoordinatesBlock:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
             Core.CoordinatesBlock.text:SetPoint("RIGHT", Core.CoordinatesBlock, "CENTER")
             Core.CoordinatesBlock.text:SetShadowColor(0, 0, 0, 1)
             Core.CoordinatesBlock.text:SetShadowOffset(-2, -2)
-            Core.CoordinatesBlock.text:SetScale(0.8)
+            Core.CoordinatesBlock.text:SetScale(1.2)
         end
         if not Core.CoordinatesBlock.ticker then
             Core.CoordinatesBlock.ticker = C_Timer.NewTicker(0.5, function()
@@ -135,14 +135,6 @@ function Core.LowFoodReminder(value)
     end
 end
 
-function Core.ActionBarDisable(value)
-    for _, button in ipairs(Data.actionBarButtonList) do
-        if _G[button] then
-            _G[button]:EnableMouse(not value)
-        end
-    end
-end
-
 function Core.TogglePlayerCombatText(value)
     if value then
         PlayerFrame.PlayerFrameContent.PlayerFrameContentMain.HitIndicator:Show()
@@ -152,31 +144,29 @@ function Core.TogglePlayerCombatText(value)
 end
 
 function Core.ToggleTotemFrame(value)
-    if value then
-        local pt, p, rel, x, y = TotemFrame:GetPoint()
-        if pt then
-            TotemFrame:SetPoint(pt, p, rel, x, y)
-        end
-        TotemFrame:SetAlpha(1)
-        TotemFrame:EnableMouse(value)
-    else
-        TotemFrame:ClearAllPoints()
-        TotemFrame:SetAlpha(0)
+    Data.shouldShowTotemFrame = value
+    if not Data.totemFrameHooked then
+        hooksecurefunc(TotemFrame, 'Show', function(self)
+            if not Data.shouldShowTotemFrame then
+                self:ClearAllPoints()
+                self:Hide()
+            end
+        end)
+        Data.totemFrameHooked = true
     end
 end
 
-function Core.EssenceFrame(value)
-    local alpha = value and 1 or 0
-    EssencePlayerFrame:SetAlpha(alpha)
-    EssencePlayerFrame:EnableMouse(value)
-end
-
-function Core.CustomEssenceBar(value)
-end
-
-function Core.AdjustTargetCastbarPosition()
-    TargetFrameSpellBar:ClearAllPoints()
-    TargetFrameSpellBar:SetPoint("TOPLEFT", TargetFrame, "TOPRIGHT", -5, -30)
+function Core.ToggleEssenceFrame(value)
+    Data.shouldShowEssenceFrame = value
+    if not Data.essenceFrameHooked then
+        hooksecurefunc(EssencePlayerFrame, 'Show', function(self)
+            if not Data.shouldShowEssenceFrame then
+                self:ClearAllPoints()
+                self:Hide()
+            end
+        end)
+        Data.essenceFrameHooked = true
+    end
 end
 
 function Core.TargetInfoAnchors(value)
@@ -186,12 +176,12 @@ function Core.TargetInfoAnchors(value)
         if not Data.targetCastbarHooked then
             hooksecurefunc(TargetFrameSpellBar, "AdjustPosition", function()
                 if HAQDB['targetInfoAnchors'] then
-                    Core.AdjustTargetCastbarPosition()
+                    Util.AdjustTargetCastbarPosition()
                 end
             end)
             TargetFrameSpellBar:HookScript("OnShow", function()
                 if HAQDB['targetInfoAnchors'] then
-                    Core.AdjustTargetCastbarPosition()
+                    Util.AdjustTargetCastbarPosition()
                 end
             end)
             Data.targetCastbarHooked = true
@@ -210,6 +200,22 @@ function Core.MoveCastBarTime(value)
     else
         PlayerCastingBarFrame.CastTimeText:ClearAllPoints()
         PlayerCastingBarFrame.CastTimeText:SetPoint("LEFT", PlayerCastingBarFrame, "RIGHT", 4, 0)
+    end
+end
+
+function Core.AutoAcceptRoleQueue(value)
+    if value then
+        if not Core.RoleQueueTracker then
+            Core.RoleQueueTracker = CreateFrame('Frame')
+            Core.RoleQueueTracker:SetScript('OnEvent', function()
+                LFDRoleCheckPopupAcceptButton:Click()
+            end)
+        end
+        Core.RoleQueueTracker:RegisterEvent('LFG_ROLE_CHECK_SHOW')
+    else
+        if Core.RoleQueueTracker then
+            Core.RoleQueueTracker:UnregisterAllEvents()
+        end
     end
 end
 
@@ -239,8 +245,10 @@ end
 
 function Core.CombatTimer(value)
     if value then
-        StopwatchFrame:Show()
-        StopwatchFrame:SetFrameStrata('LOW')
+        if StopwatchFrame then
+            StopwatchFrame:Show()
+            StopwatchFrame:SetFrameStrata('LOW')
+        end
         if not Core.CombatTimerTracker then
             Core.CombatTimerTracker = CreateFrame("Frame")
             Core.CombatTimerTracker:SetScript("OnEvent", function(self, event)
@@ -254,6 +262,11 @@ function Core.CombatTimer(value)
                     Stopwatch_Play()
                 elseif event == "ENCOUNTER_END" or event == "PLAYER_REGEN_ENABLED" and not Core.CombatTimerTracker.encounter then
                     Stopwatch_Pause()
+                    if event == "ENCOUNTER_END" then
+                        local fightTime = StopwatchTickerMinute:GetText() .. ':' .. StopwatchTickerSecond:GetText()
+                        local text = 'Encounter ended. Fight time: ' .. fightTime
+                        print(text)
+                    end
                 end
             end)
         end
@@ -262,8 +275,10 @@ function Core.CombatTimer(value)
         Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_START")
         Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_END")
     else
-        StopwatchFrame:SetFrameStrata('DIALOG')
-        StopwatchFrame:Hide()
+        if StopwatchFrame then
+            StopwatchFrame:SetFrameStrata('DIALOG')
+            StopwatchFrame:Hide()
+        end
         if Core.CombatTimerTracker then
             Core.CombatTimerTracker:UnregisterAllEvents()
         end
@@ -271,7 +286,9 @@ function Core.CombatTimer(value)
 end
 
 function Core.CombatTimerScale(value)
-    StopwatchFrame:SetScale(value)
+    if StopwatchFrame then
+        StopwatchFrame:SetScale(value)
+    end
 end
 
 function Core.EnableCastTracker(value)

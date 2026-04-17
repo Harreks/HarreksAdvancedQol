@@ -18,22 +18,6 @@ Data.settings = {
         func = "ToggleScreenshotMessage"
     },
     {
-        key = "autoCombatLog",
-        type = "checkbox",
-        text = "Enable Auto Combat Log",
-        default = true,
-        tooltip = "Enable automatically starting the combat log when you log in to the game.",
-        func = "ToggleCombatLogging"
-    },
-    {
-        key = "autoSellAndRepair",
-        type = "checkbox",
-        text = "Auto Sell and Repair",
-        default = false,
-        tooltip = "Enable to automatically sell junk and repair when interacting with an npc.",
-        func = "AutoSellAndRepair"
-    },
-    {
         key = "maxCameraDistance",
         type = "slider",
         text = "Max Camera Distance",
@@ -62,31 +46,47 @@ Data.settings = {
     },
     {
         key = "lowFoodReminder",
-        type = "checkbox",
+        ddKey = "chosenFood",
+        type = "checkbox-dropdown",
         text = "Low On Food Reminder",
         default = false,
+        ddDefault = 260260,
+        items = {
+            { text = "Springrunner Sparkling", value = 260260 },
+            { text = "Bloom Nectar", value = 260261 },
+            { text = "Sanguithorn Tea", value = 242299 }
+        },
         tooltip = "Shows a warning while inside Silvermoon city if you are low on your chosen food.",
         func = "LowFoodReminder"
     },
     {
-        key = "chosenFood",
-        type = "dropdown",
-        text = "Chosen Food",
-        items = {
-            { text = "Springrunner Sparkling", value = 260260 },
-            { text = "Bloom Nectar", value = 260261 }
-        },
-        default = 260260,
-        tooltip = "Chosen food for the 'low on food' reminder.",
-        parent = "lowFoodReminder"
+        key = 'automationHeader',
+        type = 'header',
+        text = 'Automation'
     },
     {
-        key = "actionBarDisable",
+        key = "autoCombatLog",
         type = "checkbox",
-        text = "Lock Last Action Bars",
+        text = "Enable Auto Combat Log",
+        default = true,
+        tooltip = "Enable automatically starting the combat log when you log in to the game.",
+        func = "ToggleCombatLogging"
+    },
+    {
+        key = "autoSellAndRepair",
+        type = "checkbox",
+        text = "Auto Sell and Repair",
         default = false,
-        tooltip = "Some setups utilize action bars 7 and 8 as icon displays, this setting locks those bars so they can't be changed to avoid accidental clicks or mouseovers",
-        func = "ActionBarDisable"
+        tooltip = "Enable to automatically sell junk and repair when interacting with an npc.",
+        func = "AutoSellAndRepair"
+    },
+    {
+        key = 'autoAcceptRoleQueue',
+        type = 'checkbox',
+        text = 'Auto Accept Role Queues',
+        default = false,
+        tooltip = 'Enable to automatically accept role queues with your last selected role.',
+        func = 'AutoAcceptRoleQueues'
     },
     {
         key = 'unitFramesHeader',
@@ -115,15 +115,7 @@ Data.settings = {
         text = "Display Essence Frame",
         default = false,
         tooltip = "Show or hide the essence icons that show below the player frame.",
-        func = "EssenceFrame"
-    },
-    {
-        key = "customEssenceBar",
-        type = "checkbox",
-        text = "Enable Custom Essence Bar",
-        default = false,
-        tooltip = "Enable the custom essence bar for evokers.",
-        func = "CustomEssenceBar"
+        func = "ToggleEssenceFrame"
     },
     {
         key = "targetInfoAnchors",
@@ -214,3 +206,7 @@ Data.settings = {
         func = "CastTrackerIconSize"
     }
 }
+
+Data.targetCastbarHooked = false
+Data.totemFrameHooked = false
+Data.essenceFrameHooked = false

@@ -3,16 +3,35 @@ local Data = NS.Data
 local Util = NS.Util
 local Core = NS.Core
 
--- Initialize layout states
-local totemPoint, totemParent, totemRel, totemX, totemY = TotemFrame:GetPoint()
-local totPoint, totParent, totRel, totX, totY = TargetFrameToT:GetPoint()
-
--- State vars
-Data.targetCastbarHooked = false
-Data.actionBarButtonList = {}
-for i = 6, 7 do
-    for j = 1, 12 do
-        local button = 'MultiBar' .. i .. 'Button' .. j
-        table.insert(Data.actionBarButtonList, button)
+function Util.GetTotemFramePoints()
+    if not Data.totemFrame then
+        local totemPoint, totemParent, totemRel, totemX, totemY = TotemFrame:GetPoint()
+        Data.totemFrame = {
+            point = totemPoint,
+            parent = totemParent,
+            relative = totemRel,
+            xOffset = totemX,
+            yOffset = totemY
+        }
     end
+    return Data.totemFrame
+end
+
+function Util.GetTargetOfTargetPoints()
+    if not Data.targetOfTarget then
+        local totPoint, totParent, totRel, totX, totY = TargetFrameToT:GetPoint()
+        Data.targetOfTarget = {
+            point = totPoint,
+            parent = totParent,
+            relative = totRel,
+            xOffset = totX,
+            yOffset = totY
+        }
+    end
+    return Data.targetOfTarget
+end
+
+function Util.AdjustTargetCastbarPosition()
+    TargetFrameSpellBar:ClearAllPoints()
+    TargetFrameSpellBar:SetPoint("TOPLEFT", TargetFrame, "TOPRIGHT", -5, -30)
 end
