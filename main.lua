@@ -26,7 +26,7 @@ loadTracker:SetScript('OnEvent', function(_, _, addonName)
         local LAMB = NS.LibAdvancedMenuBuilder
         local category = LAMB.CreateOptionsPanel(settings, HAQDB, 'Advanced QoL ' .. NS.Version, 'vertical', parent)
 
-        if HAUS then
+        if HAUS and HAUS.RegisterComponent and type(HAUS.RegisterComponent) == 'function' then
             HAUS.RegisterComponent('HarreksAdvancedQol', NS.Version, category.ID)
         end
 

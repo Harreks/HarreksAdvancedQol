@@ -2,7 +2,7 @@
 ## Title: Harreks Advanced Quality of Life
 ## Notes: Quality of life improvements for the WoW UI.
 ## Author: Harrek
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: HAQDB
 ## IconTexture: Interface/Addons/HarreksAdvancedQol/harrek-logo.png
 ## OptionalDeps: HarreksAdvancedUiSuite
