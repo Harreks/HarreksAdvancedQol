@@ -1,8 +1,8 @@
-## Interface: 120001
+## Interface: 120100
 ## Title: Harreks Advanced Quality of Life
 ## Notes: Quality of life improvements for the WoW UI.
 ## Author: Harrek
-## Version: 1.0.1
+## Version: 1.0.4
 ## SavedVariables: HAQDB
 ## IconTexture: Interface/Addons/HarreksAdvancedQol/harrek-logo.png
 ## OptionalDeps: HarreksAdvancedUiSuite

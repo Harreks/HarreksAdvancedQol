@@ -108,7 +108,9 @@ function Core.LowFoodReminder(value)
             Core.FoodWatcher:SetScript("OnEvent", function(_, event)
                 if event == "ZONE_CHANGED_NEW_AREA" or event == "PLAYER_ENTERING_WORLD" then
                     local mapId = C_Map.GetBestMapForUnit("player")
-                    if mapId and mapId == 2393 then
+                    local spec = C_SpecializationInfo.GetSpecialization()
+                    local role = select(5, C_SpecializationInfo.GetSpecializationInfo(spec))
+                    if mapId and mapId == 2393 and role == 'HEALER' then
                         local foodCount = C_Item.GetItemCount(HAQDB['chosenFood'])
                         if foodCount < 15 then
                             Core.FoodWatcher.text:Show()
@@ -208,6 +210,7 @@ function Core.AutoAcceptRoleQueue(value)
         if not Core.RoleQueueTracker then
             Core.RoleQueueTracker = CreateFrame('Frame')
             Core.RoleQueueTracker:SetScript('OnEvent', function()
+                print('queue popped')
                 LFDRoleCheckPopupAcceptButton:Click()
             end)
         end
@@ -244,50 +247,53 @@ function Core.CastBarIcon(value)
 end
 
 function Core.CombatTimer(value)
-    if value then
-        if StopwatchFrame then
+    if StopwatchFrame then
+        if value then
             StopwatchFrame:Show()
             StopwatchFrame:SetFrameStrata('LOW')
-        end
-        if not Core.CombatTimerTracker then
-            Core.CombatTimerTracker = CreateFrame("Frame")
-            Core.CombatTimerTracker:SetScript("OnEvent", function(self, event)
-                if event == "PLAYER_REGEN_DISABLED" or event == "ENCOUNTER_START" then
-                    if event == "ENCOUNTER_START" then
-                        Core.CombatTimerTracker.encounter = true
-                    else
-                        Core.CombatTimerTracker.encounter = false
+            if not Core.CombatTimerTracker then
+                Core.CombatTimerTracker = CreateFrame("Frame")
+                Core.CombatTimerTracker:SetScript("OnEvent", function(self, event, ...)
+                    if event == "PLAYER_REGEN_DISABLED" or event == "ENCOUNTER_START" then
+                        if event == "ENCOUNTER_START" then
+                            Core.CombatTimerTracker.encounter = true
+                        else
+                            Core.CombatTimerTracker.encounter = false
+                        end
+                        Stopwatch_Clear()
+                        Stopwatch_Play()
+                    elseif event == "ENCOUNTER_END" and Core.CombatTimerTracker.encounter or event == "PLAYER_REGEN_ENABLED" then
+                        Stopwatch_Pause()
+                        if event == "ENCOUNTER_END" then
+                            local _, encounterName = ...
+                            local fightTime = StopwatchTickerMinute:GetText() .. ':' .. StopwatchTickerSecond:GetText()
+                            local text = 'Encounter ended with ' .. encounterName .. '. Fight time: ' .. fightTime
+                            print(text)
+                        end
                     end
-                    Stopwatch_Clear()
-                    Stopwatch_Play()
-                elseif event == "ENCOUNTER_END" or event == "PLAYER_REGEN_ENABLED" and not Core.CombatTimerTracker.encounter then
-                    Stopwatch_Pause()
-                    if event == "ENCOUNTER_END" then
-                        local fightTime = StopwatchTickerMinute:GetText() .. ':' .. StopwatchTickerSecond:GetText()
-                        local text = 'Encounter ended. Fight time: ' .. fightTime
-                        print(text)
-                    end
-                end
-            end)
-        end
-        Core.CombatTimerTracker:RegisterEvent("PLAYER_REGEN_DISABLED")
-        Core.CombatTimerTracker:RegisterEvent("PLAYER_REGEN_ENABLED")
-        Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_START")
-        Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_END")
-    else
-        if StopwatchFrame then
+                end)
+            end
+            Core.CombatTimerTracker:RegisterEvent("PLAYER_REGEN_DISABLED")
+            Core.CombatTimerTracker:RegisterEvent("PLAYER_REGEN_ENABLED")
+            Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_START")
+            Core.CombatTimerTracker:RegisterEvent("ENCOUNTER_END")
+        else
             StopwatchFrame:SetFrameStrata('DIALOG')
             StopwatchFrame:Hide()
+            if Core.CombatTimerTracker then
+                Core.CombatTimerTracker:UnregisterAllEvents()
+            end
         end
-        if Core.CombatTimerTracker then
-            Core.CombatTimerTracker:UnregisterAllEvents()
-        end
+    else
+        Util.LoadTimeManager()
     end
 end
 
 function Core.CombatTimerScale(value)
     if StopwatchFrame then
         StopwatchFrame:SetScale(value)
+    else
+        Util.LoadTimeManager()
     end
 end
 
@@ -307,21 +313,12 @@ function Core.EnableCastTracker(value)
             end
             Core.CastTrackerFrame:SetPoint(reference, UIParent, relative,  offsetX, offsetY)
             Core.CastTrackerFrame:SetSize(HAQDB['castTrackerIconSize'] * 3, HAQDB['castTrackerIconSize'])
-            Core.CastTrackerFrame.icons = {}
-            for i = 1, 3 do
-                Core.CastTrackerFrame.icons[i] = Core.CastTrackerFrame:CreateTexture(nil, "BACKGROUND")
-                Core.CastTrackerFrame.icons[i]:SetSize(HAQDB['castTrackerIconSize'], HAQDB['castTrackerIconSize'])
-                Core.CastTrackerFrame.icons[i]:SetTexture(577318)
-            end
-            Core.CastTrackerFrame.icons[1]:SetPoint("LEFT", Core.CastTrackerFrame, "LEFT")
-            Core.CastTrackerFrame.icons[2]:SetPoint("CENTER", Core.CastTrackerFrame, "CENTER")
-            Core.CastTrackerFrame.icons[3]:SetPoint("RIGHT", Core.CastTrackerFrame, "RIGHT")
+            Core.CastTrackerFrame:SetClipsChildren(true)
+            Util.CreateCastTrackerIcons(Core.CastTrackerFrame, HAQDB['castTrackerIconSize'])
             Core.CastTrackerFrame:SetScript("OnEvent", function(self, event, ...)
                 local unit, _, spellId = ...
                 if unit and not issecretvalue(unit) and unit == 'player' then
-                    Core.CastTrackerFrame.icons[1]:SetTexture(Core.CastTrackerFrame.icons[2]:GetTexture())
-                    Core.CastTrackerFrame.icons[2]:SetTexture(Core.CastTrackerFrame.icons[3]:GetTexture())
-                    Core.CastTrackerFrame.icons[3]:SetTexture(C_Spell.GetSpellTexture(spellId))
+                    Util.PushCastTrackerIcon(Core.CastTrackerFrame, C_Spell.GetSpellTexture(spellId))
                 end
             end)
             Core.CastTrackerFrame:SetScript("OnMouseDown", function(self, button)
@@ -366,8 +363,6 @@ end
 function Core.CastTrackerIconSize(value)
     if Core.CastTrackerFrame then
         Core.CastTrackerFrame:SetSize(value * 3, value)
-        for i = 1, 3 do
-            Core.CastTrackerFrame.icons[i]:SetSize(value, value)
-        end
+        Util.ResizeCastTrackerIcons(Core.CastTrackerFrame, value)
     end
 end
